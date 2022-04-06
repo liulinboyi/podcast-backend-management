@@ -9,10 +9,10 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const options = [
-  {
-    label: '切换角色',
-    key: 'switchRole',
-  },
+  // {
+  //   label: '切换角色',
+  //   key: 'switchRole',
+  // },
   {
     label: '退出登录',
     key: 'logout',

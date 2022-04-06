@@ -9,6 +9,7 @@ const appStore = useAppStore()
 
 <template>
   <n-config-provider :theme-overrides="appStore.themeOverrides">
+  <!-- provider组件已经挂载到vue实例上去了，在这里使用 -->
     <n-loading-bar-provider>
       <loading-bar />
       <n-dialog-provider>

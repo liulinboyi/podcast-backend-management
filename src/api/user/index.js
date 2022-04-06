@@ -11,12 +11,13 @@ export function getUsers(data = {}) {
 export function getUser(id) {
   if (id) {
     return request({
-      url: `/user/${id}`,
+      // url: `/user/${id}`,
+      url: '/myself',
       method: 'get',
     })
   }
   return request({
-    url: '/user',
+    url: '/myself',
     method: 'get',
   })
 }

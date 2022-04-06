@@ -2,9 +2,16 @@ import { defAxios as request } from '@/utils/http'
 
 export const login = (data) => {
   return request({
-    url: '/auth/login',
+    url: '/login',
     method: 'post',
-    data,
+    formData: data,
+  })
+}
+
+export const getUser = () => {
+  return request({
+    method: 'get',
+    url: '/myself'
   })
 }
 

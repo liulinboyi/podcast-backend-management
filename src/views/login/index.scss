@@ -1,0 +1,130 @@
+@property --perA {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 75%;
+}
+
+@property --perB {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 99%;
+}
+
+@property --perC {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 15%;
+}
+
+@property --perD {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 16%;
+}
+
+@property --perE {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 86%;
+}
+
+@property --angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.login-page {
+    height: 100%;
+    background-color: #e1e8ee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: radial-gradient(circle at var(--perE) 7%,
+            rgba(40, 40, 40, 0.04) 0%,
+            rgba(40, 40, 40, 0.04) 50%,
+            rgba(200, 200, 200, 0.04) 50%,
+            rgba(200, 200, 200, 0.04) 100%),
+        radial-gradient(circle at var(--perC) var(--perD),
+            rgba(99, 99, 99, 0.04) 0%,
+            rgba(99, 99, 99, 0.04) 50%,
+            rgba(45, 45, 45, 0.04) 50%,
+            rgba(45, 45, 45, 0.04) 100%),
+        radial-gradient(circle at var(--perA) var(--perB),
+            rgba(243, 243, 243, 0.04) 0%,
+            rgba(243, 243, 243, 0.04) 50%,
+            rgba(37, 37, 37, 0.04) 50%,
+            rgba(37, 37, 37, 0.04) 100%),
+        linear-gradient(var(--angle), #22deed, #8759d7);
+    animation: move 30s infinite alternate linear;
+
+    @keyframes move {
+        100% {
+            --perA: 85%;
+            --perB: 49%;
+            --perC: 45%;
+            --perD: 39%;
+            --perE: 70%;
+            --angle: 360deg;
+        }
+    }
+}
+
+.form-wrapper {
+    text-align: center;
+    padding: 40px 50px;
+    border-radius: 15px;
+    background-color: rgba(#fff, 0.2);
+
+    .title {
+        font-size: 22px;
+        color: #f3f3f3;
+    }
+
+    .form-item {
+        width: 240px;
+
+        input {
+            width: 100%;
+            height: 40px;
+            padding: 0 15px;
+            border-radius: 5px;
+
+            font-size: 14px;
+            color: #333;
+            transition: 0.3s;
+
+            &:focus {
+                box-shadow: 0 0 5px #8759d7;
+            }
+        }
+
+        button {
+            width: 100%;
+            height: 40px;
+
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            background-color: #6683d2;
+
+            cursor: pointer;
+            transition: all 0.3s;
+
+            &:hover {
+                opacity: 0.8;
+            }
+        }
+
+        // 验证码部分
+        &.code {
+            display: flex;
+
+            input {
+                border-radius: 0;
+            }
+        }
+    }
+}

@@ -25,6 +25,7 @@ const title = import.meta.env.VITE_APP_TITLE
     .n-gradient-text {
       font-size: 14px;
       font-weight: bold;
+      color: $primaryColor;
     }
   }
 }

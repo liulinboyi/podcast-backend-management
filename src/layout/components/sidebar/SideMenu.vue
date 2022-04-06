@@ -13,7 +13,8 @@ const permissionStore = usePermissionStore()
 const { currentRoute } = router
 
 const menuOptions = computed(() => {
-  return generateOptions(permissionStore.routes, '')
+  let res = generateOptions(permissionStore.routes, '')
+  return res
 })
 
 function resolvePath(basePath, path) {
@@ -61,7 +62,10 @@ function generateOptions(routes, basePath) {
       } else {
         curOption.icon = (route.meta?.icon && renderIcon(route.meta?.icon)) || renderIcon(CircleRegular, { size: 8 })
       }
-      options.push(curOption)
+      // 过滤添加了隐藏配置的菜单项
+      if (!route.meta.hide) {
+        options.push(curOption)
+      }
     }
   })
   return options

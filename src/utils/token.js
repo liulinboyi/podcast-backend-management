@@ -1,13 +1,17 @@
 import { createLocalStorage } from './cache'
 import { refreshToken } from '@/api/auth'
+import { getUser } from '@/api/auth/index'
 
 const TOKEN_CODE = 'access_token'
 const DURATION = 6 * 60 * 60
 
 export const lsToken = createLocalStorage()
 
-export function getToken() {
-  return lsToken.get(TOKEN_CODE)
+/** 获取用户信息 */
+export async function getToken() {
+  // return lsToken.get(TOKEN_CODE)
+  let user = await getUser()
+  return user
 }
 
 export function setToken(token) {

@@ -6,15 +6,15 @@ const NDialog = useDialog()
 
 class Dialog {
   success(title, option) {
-    this.showDialog('success', { title, ...option })
+    return this.showDialog('success', { title, ...option })
   }
 
   warning(title, option) {
-    this.showDialog('warning', { title, ...option })
+    return this.showDialog('warning', { title, ...option })
   }
 
   error(title, option) {
-    this.showDialog('error', { title, ...option })
+    return this.showDialog('error', { title, ...option })
   }
 
   showDialog(type = 'success', option) {
@@ -22,7 +22,7 @@ class Dialog {
       // ! 没有title的情况
       option.showIcon = false
     }
-    NDialog[type]({
+    return NDialog[type]({
       positiveText: 'OK',
       closable: false,
       ...option,
@@ -30,7 +30,7 @@ class Dialog {
   }
 
   confirm(option = {}) {
-    this.showDialog(option.type || 'error', {
+    return this.showDialog(option.type || 'error', {
       positiveText: '确定',
       negativeText: '取消',
       onPositiveClick: option.confirm,

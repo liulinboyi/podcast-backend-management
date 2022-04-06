@@ -2,13 +2,15 @@ import { useUserStore } from '@/store/modules/user'
 import { usePermissionStore } from '@/store/modules/permission'
 import { NOT_FOUND_ROUTE } from '@/router/routes'
 import { getToken, refreshAccessToken, removeToken } from '@/utils/token'
+import { getUser } from '@/api/user/index'
 
 const WHITE_LIST = ['/login', '/redirect']
+/** 路由权限 路由守卫 */
 export function createPermissionGuard(router) {
   const userStore = useUserStore()
   const permissionStore = usePermissionStore()
   router.beforeEach(async (to, from, next) => {
-    const token = getToken()
+    const token = await getUser()
     if (token) {
       if (to.path === '/login') {
         next({ path: '/' })
