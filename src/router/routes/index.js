@@ -41,6 +41,7 @@ export const basicRoutes = [
     meta: {
       title: '首页',
       icon: ChartBar,
+      role: ['ROLE_user', 'ROLE_admin'],
     },
     children: [
       {
@@ -50,6 +51,7 @@ export const basicRoutes = [
         meta: {
           title: '专栏',
           icon: HouseDamage,
+          role: ['ROLE_user', 'ROLE_admin'],
         },
       },
     ],
@@ -62,6 +64,7 @@ export const basicRoutes = [
     redirect: '/test/column-manage',
     meta: {
       title: '管理',
+      role: ['ROLE_user', 'ROLE_admin'],
     },
     children: [
       {
@@ -71,6 +74,7 @@ export const basicRoutes = [
         component: COLUMNMANAGE,
         meta: {
           title: '专栏管理',
+          role: ['ROLE_user', 'ROLE_admin'],
         },
         children: [
           {
@@ -80,6 +84,7 @@ export const basicRoutes = [
             meta: {
               title: '所有专栏',
               top: 0,
+              role: ['ROLE_user', 'ROLE_admin'],
             },
           },
           {
@@ -89,6 +94,7 @@ export const basicRoutes = [
             meta: {
               title: '专栏播客管理',
               hide: true,
+              role: ['ROLE_user', 'ROLE_admin'],
             },
           },
         ],
@@ -99,6 +105,7 @@ export const basicRoutes = [
         component: () => import('@/views/manage/review-manage.vue'),
         meta: {
           title: '专栏审核',
+          role: ['ROLE_admin'],
         },
       },
       // {
@@ -201,10 +208,11 @@ export const NOT_FOUND_ROUTE = {
   isHidden: true,
 }
 
-const modules = import.meta.globEager('./modules/*.js')
-const asyncRoutes = []
-Object.keys(modules).forEach((key) => {
-  asyncRoutes.push(...modules[key].default)
-})
-
+// const modules = import.meta.globEager('./modules/*.js')
+// const asyncRoutes = []
+// Object.keys(modules).forEach((key) => {
+//   asyncRoutes.push(...modules[key].default)
+// })
+const asyncRoutes = basicRoutes
+console.log(asyncRoutes)
 export { asyncRoutes }

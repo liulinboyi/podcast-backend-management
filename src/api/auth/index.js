@@ -8,6 +8,13 @@ export const login = (data) => {
   })
 }
 
+export const logout = () => {
+  return request({
+    method: 'get',
+    url: `logout`,
+  })
+}
+
 export const getUser = () => {
   return request({
     method: 'get',

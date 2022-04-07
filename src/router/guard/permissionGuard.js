@@ -11,7 +11,7 @@ export function createPermissionGuard(router) {
   const permissionStore = usePermissionStore()
   router.beforeEach(async (to, from, next) => {
     const token = await getUser()
-    if (token) {
+    if (token.success) {
       if (to.path === '/login') {
         next({ path: '/' })
       } else {

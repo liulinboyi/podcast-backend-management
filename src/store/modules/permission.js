@@ -36,7 +36,10 @@ export const usePermissionStore = defineStore('permission', {
   },
   getters: {
     routes() {
-      return basicRoutes.concat(this.accessRoutes)
+      // 如果有模块路由，可以拼接路由
+      // return basicRoutes.concat(this.accessRoutes)
+      // 但是我这里为了方便，直接修改的basicRoutes
+      return this.accessRoutes
     },
   },
   actions: {

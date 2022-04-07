@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { getUser } from '@/api/user'
+import { logout } from '@/api/auth'
 import { removeToken } from '@/utils/token'
 const VITE_RESOURCE_BASE_URI = import.meta.env.VITE_RESOURCE_BASE_URI
 const VITE_BASE_URL = import.meta.env.VITE_BASE_URL
@@ -21,9 +22,11 @@ export const useUserStore = defineStore('user', {
     },
     avatar() {
       return this.userInfo?.avatar
+        ? `${VITE_BASE_URL}${VITE_RESOURCE_BASE_URI}${this.userInfo?.avatar}`
+        : '/src/assets/imgs/avatar/default.jpg'
     },
     role() {
-      return this.userInfo?.roles || []
+      return this.userInfo?.roles ? this.userInfo?.roles.map((item) => item.name) : []
     },
   },
   actions: {
@@ -36,7 +39,7 @@ export const useUserStore = defineStore('user', {
         const res = await getUser()
         if (res.status === 200) {
           const { id, username, avatar, roles } = res.data
-          this.userInfo = { id, username, avatar: `${VITE_BASE_URL}${VITE_RESOURCE_BASE_URI}${avatar}`, roles }
+          this.userInfo = { id, username, avatar, roles }
           return Promise.resolve(res.data)
         } else {
           return Promise.reject(res.message)
@@ -46,8 +49,9 @@ export const useUserStore = defineStore('user', {
         return Promise.reject(error.message)
       }
     },
-    logout() {
-      removeToken()
+    async logout() {
+      // removeToken()
+      await logout()
       this.userInfo = {}
     },
     setUserInfo(userInfo = {}) {

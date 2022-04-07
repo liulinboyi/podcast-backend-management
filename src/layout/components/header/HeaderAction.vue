@@ -27,8 +27,8 @@ function handleSelect(key) {
   }
 }
 
-function logout() {
-  userStore.logout()
+async function logout() {
+  await userStore.logout()
   $message.success('已退出登录')
   router.push({ path: '/login' })
 }
