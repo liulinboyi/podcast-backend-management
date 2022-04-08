@@ -1,5 +1,6 @@
 <script>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/store/modules/user'
 import { getDetailById, updateMedia } from '@/api/column/index'
 import { reactive, onBeforeMount, nextTick } from 'vue'
 import { fullPath, customRequest } from './utils'
@@ -59,6 +60,8 @@ export default defineComponent({
   name: 'SONGMANAGE',
   setup() {
     const route = useRoute()
+    const router = useRouter()
+    const userStore = useUserStore()
     const allMedia = reactive([])
     const columnInfo = reactive({})
     const message = useMessage()
@@ -117,6 +120,13 @@ export default defineComponent({
       }
       // 结束
       let data = res.data
+      // if (
+      //   !userStore.role.includes('ROLE_admin') /* 不是管理员 */ &&
+      //   data.userId !== userStore.userId /* 专栏信息中的userId不等于用户中的userId */
+      // ) {
+      //   // 则返回上一页
+      //   router.back()
+      // }
       // 补全资源路径
       data.img = fullPath(data.img)
       // 清空数组

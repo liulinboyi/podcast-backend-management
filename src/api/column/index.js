@@ -1,9 +1,17 @@
 import { defAxios as request } from '@/utils/http'
 
 /** 获取所有专栏 */
-export function getAllColumn(data = {}) {
+export function getAllColumn() {
   return request({
     url: '/personalColumn/findAll',
+    method: 'get',
+  })
+}
+
+/** 获取审核专栏 */
+export function getAllReview() {
+  return request({
+    url: '/personalColumn/getReview',
     method: 'get',
   })
 }

@@ -125,6 +125,13 @@ function goSong(column) {
 
 /** 打开弹窗 */
 function newColumn() {
+  // 在编辑前设置专栏信息
+  model.value.classifyId = null
+  model.value.content = null
+  model.value.title = null
+  // 图片信息
+  fileList.value.length = 0
+  fileAvatar.path = null
   modalStatus.value = MODALSTATUS.create
   showModal.value = true
 }
@@ -250,7 +257,7 @@ function deleteColumns(column) {
 
 <template>
   <div p15 flex ref="out">
-    <n-card title="所有专栏" size="small" :segmented="true">
+    <n-card title="我的专栏" size="small" :segmented="true">
       <template #header-extra>
         <n-button @click="newColumn" text type="primary">新建专栏</n-button>
       </template>
@@ -282,7 +289,7 @@ function deleteColumns(column) {
       :mask-closable="false"
     >
       <template #header>
-        <div>新建专栏</div>
+        <div>{{ modalStatus === MODALSTATUS.create ? '新建专栏' : '编辑专栏' }}</div>
       </template>
       <div>
         <n-form ref="formRef" :model="model" :rules="rules" :size="size" label-placement="top">

@@ -22,7 +22,7 @@
     </n-card>
 
     <div p15 flex>
-      <n-card title="项目" size="small" :segmented="true">
+      <n-card title="我的专栏" size="small" :segmented="true">
         <template #header-extra>
           <n-button @click="goMore" text type="primary">更多</n-button>
         </template>

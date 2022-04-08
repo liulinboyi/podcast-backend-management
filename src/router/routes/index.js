@@ -2,6 +2,8 @@ import Layout from '@/layout/index.vue'
 import Home from '@/views/dashboard/index.vue'
 import COLUMNMANAGE from '@/views/manage/column-manage.vue'
 import { ChartBar, Dove, Github, HouseDamage, Link, TimesCircle } from '@vicons/fa'
+import { useUserStore } from '@/store/modules/user'
+import { getDetailById } from '@/api/column/index'
 
 export const basicRoutes = [
   {
@@ -82,7 +84,7 @@ export const basicRoutes = [
             path: 'column',
             component: () => import('@/views/manage/column-manage-default.vue'),
             meta: {
-              title: '所有专栏',
+              title: '我的专栏',
               top: 0,
               role: ['ROLE_user', 'ROLE_admin'],
             },
@@ -95,6 +97,30 @@ export const basicRoutes = [
               title: '专栏播客管理',
               hide: true,
               role: ['ROLE_user', 'ROLE_admin'],
+            },
+            beforeEnter: async (to, from) => {
+              // 组合式api无法使用beforeEnter，所以在这里使用
+              // 来拦截行为：
+              // 查看专栏这个动作
+              // 拦截条件：
+              // 不是管理员且不是当前用户创建的专栏
+              const userStore = useUserStore()
+              let { columnId } = to.query
+              let res = await getDetailById(columnId)
+              // 结束
+              let data = res.data
+              if (
+                !userStore.role.includes('ROLE_admin') /* 不是管理员 */ &&
+                data.userId !== userStore.userId /* 专栏信息中的userId不等于用户中的userId */
+              ) {
+                // 当直接在导航栏修改url时，from的path就是"/"，需要单独处理
+                if (from.path === '/') {
+                  return { path: '/' }
+                }
+                // 则返回上一页
+                return false
+              }
+              return true
             },
           },
         ],
