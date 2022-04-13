@@ -5,7 +5,8 @@ import { getAllReview, createColumn, deleteColumn, updateMedia } from '@/api/col
 import { fullPath, customRequest, deepCopy } from './utils'
 import { useUserStore } from '@/store/modules/user'
 import { emitter } from '@/utils/eventHub'
-import { NModal, NButton, NForm, NFormItemGi, NInput, NSelect, NUpload } from 'naive-ui'
+import { NModal, NButton, NForm, NFormItemGi, NInput, NSelect, NUpload, NSwitch } from 'naive-ui'
+import CardList from './card-list.vue'
 const VITE_RESOURCE_BASE_URI = import.meta.env.VITE_RESOURCE_BASE_URI
 const VITE_BASE_URL = import.meta.env.VITE_BASE_URL
 const VITE_APP_GLOB_BASE_API = import.meta.env.VITE_APP_GLOB_BASE_API
@@ -17,6 +18,7 @@ let allColumn = reactive([])
 let updateColumn = ref({})
 let out = ref(null)
 let showModal = ref(false)
+let previewStatus = ref('未通过')
 let uploadUrl = `http://${location.host}${VITE_APP_GLOB_BASE_API}/file/upload`
 /** 弹窗状态 create | update */
 let modalStatus = ref('create')
@@ -120,7 +122,7 @@ onBeforeMount(async () => {
 
 /** 跳转到专栏内容 */
 function goSong(column) {
-  router.push(`/test/column-manage/song?columnId=${column.id}`)
+  router.push(`/test/column-manage/song?columnId=${column.id}&type=review`)
 }
 
 /** 打开弹窗 */
@@ -144,6 +146,10 @@ async function updateColumns() {
       }
     }
   }
+  // 是否通过审核
+  updateColumn.value.previewStatus = previewStatus.value
+  updateColumn.value.needPreview = '不需要审核'
+
   updateColumn.value.classifyId = model.value.classifyId
   updateColumn.value.content = model.value.content
   updateColumn.value.img = fileAvatar.path
@@ -153,6 +159,7 @@ async function updateColumns() {
   // 删除多余属性
   delete updateColumn.value.allMedia
   delete updateColumn.value.originImg
+  console.log(updateColumn)
 
   let res = await updateMedia(updateColumn.value)
   // 创建成功进入end状态
@@ -216,6 +223,8 @@ function editColumns(column) {
   model.value.classifyId = ColumnCategory[column.classifyId]
   model.value.content = column.content
   model.value.title = column.title
+  // 设置默认是否审核状态
+  previewStatus.value = column.previewStatus
   // 图片信息
   fileList.value.length = 0
   fileList.value.push({
@@ -251,33 +260,18 @@ function deleteColumns(column) {
 <template>
   <div p15 flex ref="out">
     <n-card title="审核专栏" size="small" :segmented="true">
-      <!-- <template #header-extra>
-        <n-button @click="newColumn" text type="primary">新建专栏</n-button>
-      </template> -->
-      <div class="card-list">
-        <n-card @click="goSong(column)" v-for="column of allColumn" :key="column.id" :title="column.title" size="small">
-          <template #cover>
-            <img :src="column.img" />
-          </template>
-          <p op60>{{ column.content }}</p>
-          <template #footer>
-            <div class="card-footer">
-              <span @click.stop="editColumns(column)">审核</span><span @click.stop="deleteColumns(column)">删除</span>
-            </div>
-          </template>
-        </n-card>
-        <div class="blank"></div>
-        <div class="blank"></div>
-        <div class="blank"></div>
-        <div class="blank"></div>
-      </div>
+      <card-list :navigationTo="goSong" :data="allColumn" :type="'审核'">
+        <template v-slot:default="{ column }">
+          <span @click.stop="editColumns(column)">审核</span><span @click.stop="deleteColumns(column)">删除</span>
+        </template>
+      </card-list>
     </n-card>
 
     <n-modal
       class="column-maname-default-modal"
       v-model:show="showModal"
       preset="card"
-      title="新建专栏"
+      title="审核专栏"
       :style="bodyStyle"
       :mask-closable="false"
     >
@@ -287,7 +281,7 @@ function deleteColumns(column) {
       <div>
         <n-form ref="formRef" :model="model" :rules="rules" :size="size" label-placement="top">
           <n-grid :cols="24" :x-gap="24">
-            <n-form-item-gi>
+            <n-form-item-gi :span="24">
               <n-upload
                 :custom-request="uploadAvatar"
                 :action="uploadUrl"
@@ -301,6 +295,12 @@ function deleteColumns(column) {
               >
                 点击上传
               </n-upload>
+            </n-form-item-gi>
+            <n-form-item-gi :span="24">
+              <n-switch size="large" :checked-value="'通过'" :unchecked-value="'未通过'" v-model:value="previewStatus">
+                <template #checked> 审核{{ '通过' }} </template>
+                <template #unchecked> 审核{{ '未通过' }} </template>
+              </n-switch>
             </n-form-item-gi>
             <n-form-item-gi :span="24" label="专栏名称" path="title">
               <n-input v-model:value="model.title" placeholder="请输入专栏名称" />
@@ -342,38 +342,6 @@ function deleteColumns(column) {
 </template>
 
 <style lang="scss" scoped>
-.card-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  .n-card {
-    width: 300px;
-    flex-shrink: 0;
-    margin: 10px 0;
-    cursor: pointer;
-    &:hover {
-      box-shadow: 0 1px 2px -2px #00000029, 0 3px 6px #0000001f, 0 5px 12px 4px #00000017;
-    }
-  }
-  .blank {
-    width: 300px;
-    height: 0;
-  }
-
-  .card-footer {
-    display: flex;
-    justify-content: space-around;
-    span:hover {
-      color: #18a058;
-    }
-    span {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-    }
-  }
-}
-
 .column-maname-default-modal {
   .action {
     display: flex;

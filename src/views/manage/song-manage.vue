@@ -2,59 +2,15 @@
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { getDetailById, updateMedia } from '@/api/column/index'
+import { updateFileConfig } from '@/api/media/index'
 import { reactive, onBeforeMount, nextTick } from 'vue'
-import { fullPath, customRequest } from './utils'
+import { fullPath, customRequest, deepCopy } from './utils'
 import { h, defineComponent, ref } from 'vue'
 import { NButton, useMessage, NDataTable, NCard, NImage } from 'naive-ui'
 import { NModal, NForm, NFormItemGi, NInput, NSelect, NUpload, NGrid } from 'naive-ui'
 import Plyr from 'plyr'
 const VITE_APP_GLOB_BASE_API = import.meta.env.VITE_APP_GLOB_BASE_API
 const baseUrl = import.meta.env.VITE_APP_GLOB_BASE_API
-
-const createColumns = ({ play, deleteMedia }) => {
-  return [
-    {
-      title: '序号',
-      key: 'id',
-    },
-    {
-      title: '名称',
-      key: 'fileName',
-    },
-    {
-      title: '播放',
-      key: 'actions',
-      render(row) {
-        return h(
-          NButton,
-          {
-            strong: true,
-            tertiary: true,
-            size: 'small',
-            onClick: () => play(row),
-          },
-          { default: () => '播放' }
-        )
-      },
-    },
-    {
-      title: '删除',
-      key: 'actions',
-      render(row) {
-        return h(
-          NButton,
-          {
-            strong: true,
-            tertiary: true,
-            size: 'small',
-            onClick: () => deleteMedia(row),
-          },
-          { default: () => '删除' }
-        )
-      },
-    },
-  ]
-}
 
 export default defineComponent({
   name: 'SONGMANAGE',
@@ -66,6 +22,10 @@ export default defineComponent({
     const columnInfo = reactive({})
     const message = useMessage()
     let showModal = ref(false)
+    let previewStatus = ref('未通过')
+    let needPreview = ref('需要审核')
+    /** 当前编辑行 */
+    let curRow = ref(null)
     let showModalPlayer = ref(false)
     let curSongUrl = ref('')
     const bodyStyle = {
@@ -109,7 +69,128 @@ export default defineComponent({
     let fileMedia = reactive([])
     let originColumn = reactive({})
 
-    let { columnId } = route.query
+    let { columnId, type } = route.query
+
+    const createColumns = ({ play, deleteMedia }) => {
+      return [
+        {
+          title: '序号',
+          key: 'id',
+        },
+        {
+          title: '名称',
+          key: 'fileName',
+        },
+        type === 'review'
+          ? {
+              title: '审核',
+              key: 'actions',
+              render(row) {
+                return h(
+                  NButton,
+                  {
+                    strong: true,
+                    tertiary: false,
+                    size: 'small',
+                    type: row.previewStatus === '通过' ? 'success' : 'warning',
+                    onClick: () => play(row),
+                  },
+                  { default: () => '审核' }
+                )
+              },
+            }
+          : {
+              title: '播放',
+              key: 'actions',
+              render(row) {
+                return h(
+                  NButton,
+                  {
+                    strong: true,
+                    tertiary: true,
+                    size: 'small',
+                    onClick: () => play(row),
+                  },
+                  { default: () => '播放' }
+                )
+              },
+            },
+        {
+          title: '删除',
+          key: 'actions',
+          render(row) {
+            return h(
+              NButton,
+              {
+                strong: true,
+                tertiary: true,
+                size: 'small',
+                onClick: () => deleteMedia(row),
+              },
+              { default: () => '删除' }
+            )
+          },
+        },
+        type === 'review'
+          ? {
+              title: '需要审核',
+              key: 'needPreview',
+            }
+          : {
+              title: '通过',
+              key: 'previewStatus',
+            },
+      ]
+    }
+
+    /** 保留专栏函数，方便调用 */
+    function columnsFn(options) {
+      return createColumns({
+        play(row) {
+          console.log(row)
+          showModalPlayer.value = true
+          // 审核状态
+          previewStatus.value = row.previewStatus
+          // 是否是需要审核
+          needPreview.value = row.needPreview
+          curRow.value = deepCopy(row)
+          nextTick(() => {
+            curSongUrl.value = `http://${location.host}${baseUrl}/file/video/player?path=${row.path}`
+            const player = new Plyr('#player')
+          })
+        },
+        deleteMedia(row) {
+          const d = $dialog.success('确定删除?', {
+            // content: '点击，倒计时 3 秒',
+            positiveText: '确认',
+            negativeText: '取消',
+            onPositiveClick: () => {
+              d.loading = true
+              return new Promise(async (resolve) => {
+                await deleteMedias(row)
+                resolve()
+              })
+            },
+          })
+        },
+      })
+    }
+
+    let columns = ref(columnsFn())
+
+    /** 更新专栏播客媒体 */
+    async function updateMedias() {
+      // 点击创建，进入loa顶状态
+      createStatus.value = CREATESTATUS.loading
+      curRow.value.previewStatus = previewStatus.value
+      curRow.value.needPreview = '不需要审核'
+
+      await updateFileConfig(curRow.value)
+      createStatus.value = CREATESTATUS.end
+      showModalPlayer.value = false
+      await refresh()
+      columns.value = columnsFn()
+    }
 
     async function refresh() {
       let res = await getDetailById(columnId)
@@ -228,32 +309,15 @@ export default defineComponent({
       handleUploadChange,
       handleFileListChange,
       handleFinish,
+      updateMedias,
+      type,
+      previewStatus,
+      needPreview,
+      curRow,
       allMedia,
       columnInfo,
       // data,
-      columns: createColumns({
-        play(row) {
-          showModalPlayer.value = true
-          nextTick(() => {
-            curSongUrl.value = `http://${location.host}${baseUrl}/file/video/player?path=${row.path}`
-            const player = new Plyr('#player')
-          })
-        },
-        deleteMedia(row) {
-          const d = $dialog.success('确定删除?', {
-            // content: '点击，倒计时 3 秒',
-            positiveText: '确认',
-            negativeText: '取消',
-            onPositiveClick: () => {
-              d.loading = true
-              return new Promise(async (resolve) => {
-                await deleteMedias(row)
-                resolve()
-              })
-            },
-          })
-        },
-      }),
+      columns,
       pagination: false,
       showModal,
       bodyStyle,
@@ -347,9 +411,44 @@ export default defineComponent({
       :style="bodyStyle"
       :mask-closable="false"
     >
+      <n-switch
+        v-if="type === 'review'"
+        size="large"
+        :checked-value="'通过'"
+        :unchecked-value="'未通过'"
+        v-model:value="previewStatus"
+      >
+        <template #checked> 审核{{ '通过' }} </template>
+        <template #unchecked> 审核{{ '未通过' }} </template>
+      </n-switch>
+      <n-switch
+        v-else
+        size="large"
+        :checked-value="'需要审核'"
+        :unchecked-value="'不需要审核'"
+        v-model:value="needPreview"
+      >
+        <template #checked> 需要审核 </template>
+        <template #unchecked> 不需要审核 </template>
+      </n-switch>
       <audio id="player" controls>
         <source :src="curSongUrl" type="audio/mpeg" />
       </audio>
+      <template #action>
+        <!-- <div>操作</div> -->
+        <div class="action">
+          <n-button type="warning" class="cancel" @click="showModalPlayer = false"> 取消 </n-button>
+          <n-button
+            type="success"
+            class="confirm"
+            @click="updateMedias"
+            :disabled="createStatus === CREATESTATUS.loading"
+            :loading="createStatus === CREATESTATUS.loading"
+          >
+            确定
+          </n-button>
+        </div>
+      </template>
     </n-modal>
   </div>
 </template>

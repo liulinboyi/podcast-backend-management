@@ -114,11 +114,11 @@ export const basicRoutes = [
                 data.userId !== userStore.userId /* 专栏信息中的userId不等于用户中的userId */
               ) {
                 // 当直接在导航栏修改url时，from的path就是"/"，需要单独处理
-                if (from.path === '/') {
-                  return { path: '/' }
-                }
-                // 则返回上一页
-                return false
+                // if (from.path === '/') {
+                //   return { path: '/' }
+                // }
+                // 直接去404页面
+                return { path: '/404' }
               }
               return true
             },

@@ -6,6 +6,7 @@ import { fullPath, customRequest, deepCopy } from './utils'
 import { useUserStore } from '@/store/modules/user'
 import { emitter } from '@/utils/eventHub'
 import { NModal, NButton, NForm, NFormItemGi, NInput, NSelect, NUpload } from 'naive-ui'
+import CardList from './card-list.vue'
 const VITE_RESOURCE_BASE_URI = import.meta.env.VITE_RESOURCE_BASE_URI
 const VITE_BASE_URL = import.meta.env.VITE_BASE_URL
 const VITE_APP_GLOB_BASE_API = import.meta.env.VITE_APP_GLOB_BASE_API
@@ -18,6 +19,7 @@ let updateColumn = ref({})
 let out = ref(null)
 let showModal = ref(false)
 let uploadUrl = `http://${location.host}${VITE_APP_GLOB_BASE_API}/file/upload`
+let needPreview = ref('需要审核')
 /** 弹窗状态 create | update */
 let modalStatus = ref('create')
 /** 所有弹窗状态 */
@@ -154,12 +156,16 @@ async function updateColumns() {
   updateColumn.value.classifyId = model.value.classifyId
   updateColumn.value.content = model.value.content
   updateColumn.value.img = fileAvatar.path
+  // 是否需要审核
+  updateColumn.value.needPreview = needPreview.value
   updateColumn.value.mediaIdArray = (updateColumn.value.allMedia ? updateColumn.value.allMedia : [])
     .map((item) => item.id)
     .join(',')
   // 删除多余属性
   delete updateColumn.value.allMedia
   delete updateColumn.value.originImg
+  // console.log(updateColumn.value)
+  // debugger
 
   let res = await updateMedia(updateColumn.value)
   // 创建成功进入end状态
@@ -223,6 +229,8 @@ function editColumns(column) {
   model.value.classifyId = ColumnCategory[column.classifyId]
   model.value.content = column.content
   model.value.title = column.title
+
+  needPreview.value = column.needPreview
   // 图片信息
   fileList.value.length = 0
   fileList.value.push({
@@ -261,23 +269,27 @@ function deleteColumns(column) {
       <template #header-extra>
         <n-button @click="newColumn" text type="primary">新建专栏</n-button>
       </template>
-      <div class="card-list">
-        <n-card @click="goSong(column)" v-for="column of allColumn" :key="column.id" :title="column.title" size="small">
-          <template #cover>
-            <img :src="column.img" />
-          </template>
-          <p op60>{{ column.content }}</p>
-          <template #footer>
-            <div class="card-footer">
-              <span @click.stop="editColumns(column)">编辑</span><span @click.stop="deleteColumns(column)">删除</span>
-            </div>
-          </template>
-        </n-card>
-        <div class="blank"></div>
-        <div class="blank"></div>
-        <div class="blank"></div>
-        <div class="blank"></div>
-      </div>
+      <!-- <div class="card-list">
+        <div class="out-card" v-for="column of allColumn" :key="column.id">
+          <div class="card-notice">{{ '未通过' }}</div>
+          <n-card @click="goSong(column)" :title="column.title" size="small">
+            <template #cover>
+              <img :src="column.img" />
+            </template>
+            <p op60>{{ column.content }}</p>
+            <template #footer>
+              <div class="card-footer">
+                <span @click.stop="editColumns(column)">编辑</span><span @click.stop="deleteColumns(column)">删除</span>
+              </div>
+            </template>
+          </n-card>
+        </div>
+      </div> -->
+      <card-list :navigationTo="goSong" :data="allColumn" :type="'编辑'">
+        <template v-slot:default="{ column }">
+          <span @click.stop="editColumns(column)">编辑</span><span @click.stop="deleteColumns(column)">删除</span>
+        </template>
+      </card-list>
     </n-card>
 
     <n-modal
@@ -294,7 +306,7 @@ function deleteColumns(column) {
       <div>
         <n-form ref="formRef" :model="model" :rules="rules" :size="size" label-placement="top">
           <n-grid :cols="24" :x-gap="24">
-            <n-form-item-gi>
+            <n-form-item-gi :span="24">
               <n-upload
                 :custom-request="uploadAvatar"
                 :action="uploadUrl"
@@ -308,6 +320,17 @@ function deleteColumns(column) {
               >
                 点击上传
               </n-upload>
+            </n-form-item-gi>
+            <n-form-item-gi :span="24">
+              <n-switch
+                size="large"
+                :checked-value="'需要审核'"
+                :unchecked-value="'不需要审核'"
+                v-model:value="needPreview"
+              >
+                <template #checked> 需要审核 </template>
+                <template #unchecked> 不需要审核 </template>
+              </n-switch>
             </n-form-item-gi>
             <n-form-item-gi :span="24" label="专栏名称" path="title">
               <n-input v-model:value="model.title" placeholder="请输入专栏名称" />
@@ -349,38 +372,6 @@ function deleteColumns(column) {
 </template>
 
 <style lang="scss" scoped>
-.card-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  .n-card {
-    width: 300px;
-    flex-shrink: 0;
-    margin: 10px 0;
-    cursor: pointer;
-    &:hover {
-      box-shadow: 0 1px 2px -2px #00000029, 0 3px 6px #0000001f, 0 5px 12px 4px #00000017;
-    }
-  }
-  .blank {
-    width: 300px;
-    height: 0;
-  }
-
-  .card-footer {
-    display: flex;
-    justify-content: space-around;
-    span:hover {
-      color: #18a058;
-    }
-    span {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-    }
-  }
-}
-
 .column-maname-default-modal {
   .action {
     display: flex;
